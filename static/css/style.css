@@ -34,6 +34,10 @@ button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+#predictionResult {
+  background-color: #f0b9da;
+}
 #preview {
   margin: 20px auto;
   width: 100%;
