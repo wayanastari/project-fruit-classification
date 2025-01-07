@@ -58,4 +58,4 @@ if uploaded_file is not None:
         confidence = float(np.max(predictions))  # Confidence should be between 0 and 1
         predicted_class = class_names[np.argmax(predictions)]
         st.write(f"Prediction: {predicted_class}")
-        st.write(f"Confidence: {round(confidence, 100, 2)}")
+        st.write(f"Confidence: {round(confidence*100, 2)}")
