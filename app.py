@@ -1,17 +1,15 @@
-from flask import flask, request, render_template, jsonify
+import streamlit as st
 from keras.models import load_model
-from keras.preprocessing.image import img_to_array, load_img
+from keras.preprocessing.image import img_to_array
 import numpy as np
 from PIL import Image
-
-app = Flask(__name__)
 
 # Load model
 try:
     model = load_model('model/Fruit.h5')
-    print("Model loaded successfully.")
+    st.success("Model loaded successfully.")
 except Exception as e:
-    print("Error loading model:", e)
+    st.error(f"Error loading model: {e}")
     model = None
 
 class_names = ['apple',
@@ -42,40 +40,22 @@ def preprocess_image(image, target_size=(256, 256)):
         image = np.expand_dims(image, axis=0)
         return image
     except Exception as e:
-        print("Error preprocessing image:", e)
+        st.error(f"Error preprocessing image: {e}")
         return None
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+st.title("Fruit Classification")
+uploaded_file = st.file_uploader("Choose an image...", type="jpg")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        file = request.files['file']
-        if not file:
-            return jsonify({"error": "No file provided"}), 400
+if uploaded_file is not None:
+    img = Image.open(uploaded_file)
+    st.image(img, caption='Uploaded Image.', use_column_width=True)
+    st.write("")
+    st.write("Classifying...")
+    image_array = preprocess_image(img)
 
-        img = Image.open(file.stream)
-        image_array = preprocess_image(img)
-
-        if model is None:
-            return jsonify({"error": "Model not loaded"}), 500
-
+    if model is not None and image_array is not None:
         predictions = model.predict(image_array)
-        confidence = float(np.max(predictions))  # Ini seharusnya antara 0 dan 1
+        confidence = float(np.max(predictions))  # Confidence should be between 0 and 1
         predicted_class = class_names[np.argmax(predictions)]
-
-        return jsonify({
-            "class": predicted_class,
-            "confidence": round(confidence, 2)  # Kalikan dengan 100 untuk mendapatkan persentase
-        })
-
-    except Exception as e:
-        print(f"Error during prediction: {e}")
-        return jsonify({"error": "Error during prediction"}), 500
-
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+        st.write(f"Prediction: {predicted_class}")
+        st.write(f"Confidence: {round(confidence, 2)}")
